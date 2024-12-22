@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Результат прогноза погоды</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet"> <!-- шрифт Roboto -->
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif; /* Используем Roboto */
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            background-color: #e0f7fa; /* Светло-бирюзовый фон */
+            color: #333; /* Темно-серый текст */
+        }
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 30px;
+            background-color: #ffffff;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            font-size: 36px;
+            color: #00796b; /* Темно-зеленый цвет для заголовка */
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .city-blocks {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+        .city-block {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            background-color: #f5f5f5; /* Светлый фон для блоков города */
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        .city-block h2 {
+            color: #00796b; /* Темно-зеленый заголовок */
+            font-size: 28px;
+            margin-bottom: 15px;
+        }
+        .graph-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .graph-container div {
+            flex: 1 1 30%;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        #route-map {
+            width: 100%;
+            height: 500px;
+            margin-top: 20px;
+            border-radius: 10px;
+        }
+        .map-container {
+            margin-top: 40px;
+        }
+        .error {
+            color: #d32f2f; /* Красный цвет для ошибок */
+            font-weight: bold;
+            text-align: center;
+        }
+        a {
+            display: block;
+            text-align: center;
+            font-size: 18px;
+            color: #ffffff;
+            background-color: #00796b;
+            margin-top: 40px;
+            padding: 12px;
+            border-radius: 5px;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+        }
+        a:hover {
+            background-color: #004d40;
+        }
+    </style>
+    <!-- Include Plotly.js -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Результат прогноза погоды</h1>
+        {% if error %}
+            <p class="error">{{ error }}</p>
+        {% else %}
+            <!-- Графики для городов -->
+            <div class="city-blocks">
+                {% for graph in graphs %}
+                    <div class="city-block">
+                        <h2>{{ graph.location }}</h2>
+                        <div class="graph-container">
+                            <div id="{{ graph.location }}-temp"></div>
+                            <script>
+                                Plotly.react('{{ graph.location }}-temp', {{ graph.temp_graph | safe }});
+                            </script>
+                            <div id="{{ graph.location }}-precip"></div>
+                            <script>
+                                Plotly.react('{{ graph.location }}-precip', {{ graph.precip_graph | safe }});
+                            </script>
+                            <div id="{{ graph.location }}-wind"></div>
+                            <script>
+                                Plotly.react('{{ graph.location }}-wind', {{ graph.wind_graph | safe }});
+                            </script>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <!-- Карта -->
+            <div class="map-container">
+                <h2>Маршрут на карте:</h2>
+                <div id="route-map"></div>
+                <script>
+                    Plotly.react('route-map', {{ map_json | safe }});
+                </script>
+            </div>
+        {% endif %}
+        <a href="{{ url_for('index') }}">Вернуться на главную</a>
+    </div>
+</body>
+</html>
